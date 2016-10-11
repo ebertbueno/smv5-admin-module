@@ -29,10 +29,10 @@ class AdminServiceProvider extends ServiceProvider {
 		// CREATING THE MENU
 		//
 		$menu = Menu::instance('menu-left');
-
 		$menu->url('/admin', 'Dashboard', 0, ['auth'=>true]);
 
-		$menu->dropdown( '<i class="glyphicon glyphicon-cog"></i>', function ($menu2) 
+		$menuRight = Menu::instance('menu-right');
+		$menuRight->dropdown( '<i class="glyphicon glyphicon-cog"></i>', function ($menu2) 
 		{
 			$menu2->route('admin.users.index', trans('admin::profile.account'), [], ['perm'=>'manage-users', 'role'=>'admin'] )->order(1);
 			$menu2->route('admin.roles.index', trans('admin::layout.roles'), [], ['perm'=>'manage-roles'] )->order(2);

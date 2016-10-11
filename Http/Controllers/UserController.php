@@ -5,14 +5,15 @@ namespace Modules\Admin\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use Modules\Admin\Entities\Account;
+use Modules\Admin\Entities\RoleUser;
+use Modules\Admin\Entities\Role;
 use Modules\Admin\Repositories\User\UserRepository;
 use Auth, Validator, Input, Hash;
 use Yajra\Datatables\Datatables;
 
 class UserController extends Controller
 {
-    protected $user, $levels, $langs;
+    protected $user, $levels, $langs ;
 
     public function __construct(UserRepository $user)
     {
@@ -20,7 +21,7 @@ class UserController extends Controller
         $this->middleware('permissions:manage-users', ['except'=>['update','edit']]);
 
         $this->user = $user;
-		$this->levels = [1=>'Admin', 2=>'Visitor'];
+		$this->levels = Role::lists('name','id');
 		$this->langs = ['en'=>'English', 'pt'=>'Português'];
     }
     /**
@@ -31,23 +32,23 @@ class UserController extends Controller
     public function index(Request $request)
     {
         //
-				$levels = $this->levels;
-				$langs = $this->langs;
-			
+		$levels = $this->levels;
+		$langs = $this->langs;
+
         if ($request->ajax())
         {
-            $users = $this->user->all(['id','name','last_name','email','level','language','status']);
-
+            $users = $this->user->with('roles')->all(['id','name','last_name','email','language','status']);
+            
              return Datatables::of( $users )
-							  ->editColumn('level', function($user) use ($levels){
-										return  $levels[ $user->level ];
-								})
-							 	->editColumn('language', function($user) use ($langs){
-										return  $langs[$user->language];
-								})
-							 	->editColumn('status', function($user){
-										return  ( $user->status == 1 ? trans('admin::layout.active'):trans('admin::layout.deactive') );
-								})
+			    ->editColumn('roles', function($user) use ($levels){
+						return   @$levels[ $user->roles->role_id ];
+				})
+			 	->editColumn('language', function($user) use ($langs){
+						return  $langs[$user->language];
+				})
+			 	->editColumn('status', function($user){
+						return  ( $user->status == 1 ? trans('admin::layout.active'):trans('admin::layout.deactive') );
+				})
                 ->addColumn('action', function ($user) {
                     return '<button class="btn btn-link" ng-click="toggle(\'edit\', '.$user->id.')">Edit</button>
                             <button class="btn btn-link" ng-click="toggle(\'delete\', '.$user->id.')" > Delete</button>';
@@ -66,18 +67,23 @@ class UserController extends Controller
     public function store(Request $request)
     {
         //
-        $all = $request->all();
+        $all = $request->except(['level']);
 
         $valid = Validator::make( $all, [     
                 'name' => 'required|max:255',
                 'email' => 'required|email|max:255|unique:users',
                 'password' => 'required|confirmed|min:6',
+                'level' => 'required'
 	 			]);
 
         if( $valid->passes() )
         {
-						$all['password'] = Hash::make($all['password']);
-            $this->user->create($all);
+            //create pass
+			$all['password'] = Hash::make($all['password']);
+            //save user
+            $user = $this->user->create( $all );
+            //save role
+            $user->roles()->create(['role_id'=>$request->level, 'user_id'=>$user->id]);
 
             return response()->json(['message' => trans('admin::layout.alert_success')], 200);
         }
@@ -98,7 +104,7 @@ class UserController extends Controller
     public function show($id)
     {
         //
-		$user = $this->user->find($id);
+		$user = $this->user->with('roles')->find($id);
 			
         return response()->json( $user );
     }
@@ -138,7 +144,7 @@ class UserController extends Controller
             $id = Auth::user()->id;
         }
 
-		$input = $request->except(['_method', '_token']);
+		$input = $request->except(['_method', '_token', 'role_id']);
 
 
 		$validation = Validator::make($input,  [
@@ -156,7 +162,11 @@ class UserController extends Controller
 				else
 						$input['password'] = Hash::make($input['password']);
 
-				$this->user->update( $input, $id );
+				$user = $this->user->update( $input, $id );
+
+                $roleUser = $user->roles()->firstOrCreate(['user_id'=>$user->id]);
+                $roleUser->role_id = $request->level;
+                $roleUser->save();
 
 				if ($request->ajax())
 						return response()->json( ['message'=>trans('admin::layout.alert_success')]);
@@ -183,17 +193,17 @@ class UserController extends Controller
     public function destroy(Request $request, $id)
     {
         $rs = $this->user->delete($id);
-				if( $rs ){ 
-					$message = trans('admin::layout.alert_success'); $cod = 200;
-				}
-				else{
-					$message = trans('admin::layout.alert_error'); $cod = 412;
-				}
+		if( $rs ){ 
+			$message = trans('admin::layout.alert_success'); $cod = 200;
+		}
+		else{
+			$message = trans('admin::layout.alert_error'); $cod = 412;
+		}
 			
         if ($request->ajax())
 		        return response()->json(['message'=>$message ], $cod); 
     
-				return redirect()->route('admin.user.index')->withMessage(['message'=>$message]);
+		return redirect()->route('admin.user.index')->withMessage(['message'=>$message]);
 
     }
 	

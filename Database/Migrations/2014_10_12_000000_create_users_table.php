@@ -23,7 +23,6 @@ class CreateUsersTable extends Migration
                 $table->string('password', 60);
                 $table->string('language', 10)->default('en');
                 $table->tinyInteger('status')->default(1);
-                $table->string('level')->default('visitor');
                 $table->rememberToken();
                 $table->timestamps();
                 $table->softDeletes();

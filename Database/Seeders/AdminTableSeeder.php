@@ -19,8 +19,7 @@ class AdminTableSeeder extends Seeder {
             'email' => 'admin@admin.com',
             'password' => bcrypt('admin'),
             'language' => 'en',
-            'status' => 1,
-            'level' => 1
+            'status' => 1
         ]);
         DB::table('roles')->insert([
             'name' => 'Admin',

@@ -41,11 +41,14 @@ class RolesController extends Controller
      *
      * @return Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $roles = $this->repository->allOrSearch(Input::get('q'));
 
         $no = $roles->firstItem();
+
+        if( $request->ajax() )
+            return $roles;
 
         return View('admin::roles.index', compact('roles', 'no'));
     }

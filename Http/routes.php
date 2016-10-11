@@ -3,11 +3,11 @@
 
 Route::group(['prefix' => '/', 'namespace' => 'Modules\Admin\Http\Controllers'], function()
 {
-	//Route::get('/', 'HomeController@index');
+	Route::get('/', 'HomeController@index');
 	Route::get('search/{id}', 'HomeController@search');
 	
-	Route::get('contact', function(){ return View('site.contact'); });
-	Route::post('contact', 'HomeController@sendContact');
+	//Route::get('contact', function(){ return View('site.contact'); });
+	//Route::post('contact', 'HomeController@sendContact');
 });
 
 Route::group(['prefix' => 'admin', 'namespace' => 'Modules\Admin\Http\Controllers', 'middleware'=>'auth'], function()
@@ -19,6 +19,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Modules\Admin\Http\Controller
  	});
     Route::post('password/{id}', 'UserController@updatePass')->name('admin.user.updatePass');
 
+    Route::post('users/{id}/role', 'UserController@updateRole')->name('admin.user.updateRole');
     Route::post('users/{id}/password', 'UserController@updatePass')->name('admin.user.updatePass');
 	Route::resource('users', 'UserController' );
 
@@ -60,4 +61,10 @@ Route::group(['prefix'=>'api', 'namespace'=>'Modules\Admin\Http\Controllers', 'm
 		$id = \LucaDegasperi\OAuth2Server\Facades\Authorizer::getResourceOwnerId();
 		return App\User::select(['id','name','last_name','email'])->find($id);
 	});
+});
+
+view()->composer('admin::index', function ($view) 
+{
+    $view->widgets[] = view('admin::widget');
+    $view->with('widgets', $view->widgets );
 });

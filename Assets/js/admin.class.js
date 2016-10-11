@@ -8,21 +8,22 @@ angular.module('app', ['datatables'])
   
   .controller('PageController', function($scope, $http, DTOptionsBuilder, DTColumnBuilder, $compile, API_URL) 
 	{
-			var form = {level:"1", language:"en", status:"1"};
+			var form = {level:1, language:"en", status:1};
 			$scope.form = form;
-			$scope.levels = [ {id:"1", name:"Admin"},{id:"2",name:"Visitor"} ];
-			$scope.allstatus = [ {id:"1", name:"Ativo"},{id:"0",name:"Inativo"} ];
+			$scope.levels = [];
+			$scope.allstatus = [ {id:1, name:"Ativo"},{id:0,name:"Inativo"} ];
 			$scope.languages = [ {id:"en", name:"English"},{id:"pt",name:"Português"} ];
+
 
 			$scope.dtColumns = [
 						DTColumnBuilder.newColumn('0').withTitle('ID'),
 						DTColumnBuilder.newColumn('1').withTitle('First name'),
 						DTColumnBuilder.newColumn('2').withTitle('Last name'),
 						DTColumnBuilder.newColumn('3').withTitle('Email'),
-						DTColumnBuilder.newColumn('4').withTitle('Level'),
-						DTColumnBuilder.newColumn('5').withTitle('Language'),
-						DTColumnBuilder.newColumn('6').withTitle('Status'),
-						DTColumnBuilder.newColumn(7).withTitle(''),
+						DTColumnBuilder.newColumn('4').withTitle('Language'),
+						DTColumnBuilder.newColumn('5').withTitle('Status'),
+						DTColumnBuilder.newColumn('6').withTitle('Level'),
+						DTColumnBuilder.newColumn('7').withTitle(''),
 				];
 
 			$scope.dtInstance = {};
@@ -43,19 +44,29 @@ angular.module('app', ['datatables'])
 						$scope.dtInstance.reloadData();
 				}
 
+			$scope.getRoles = function()
+			{
+				$http.get( API_URL+'/admin/roles/')
+						.success(function(response) {
+								  $scope.levels = response.data;
+						});
+			}
+
+
 			//show modal form
 			$scope.toggle = function(modalstate, id) 
 			{
 				$scope.modalstate = modalstate;
-			  	$scope.form.id = id;
 				delete $scope.error;delete $scope.status;
 				$scope.form = angular.copy(form);
+			  	$scope.form.id = id;
 
 				if(modalstate == 'edit')
 				{
 					$http.get( API_URL+'/admin/users/' + id)
 						.success(function(response) {
 								  $scope.form = response;
+								  $scope.form.level = response.roles.role_id;
 						});
 				}
 				if(modalstate == 'delete')
@@ -111,4 +122,6 @@ angular.module('app', ['datatables'])
 				});
 			}
 	
+
+			$scope.getRoles();
 	});

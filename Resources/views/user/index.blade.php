@@ -39,7 +39,7 @@
 	      <div class="modal-body">
 	        <p>
 	          Are you sure want to delete this data?
-	        </p>
+	        </p> 
 	      </div>
 	      <div class="modal-footer">
 	        <button type="submit" class="btn btn-primary">Yes</button>
@@ -67,9 +67,9 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
 	<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 	<script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>
-  <script type="text/javascript" src="https://rawgithub.com/l-lin/angular-datatables/dev/dist/angular-datatables.min.js"></script>
-  <script type="text/javascript" src="{{ url('modules/admin/js/admin.class.js') }}"></script>
-  <!-- http://www.tutorials.kode-blog.com/laravel-5-angularjs-tutorial -->
+  	<script type="text/javascript" src="https://rawgithub.com/l-lin/angular-datatables/dev/dist/angular-datatables.min.js"></script>
+  	<script type="text/javascript" src="{{ url('modules/admin/js/admin.class.js') }}"></script>
+ 	<!-- http://www.tutorials.kode-blog.com/laravel-5-angularjs-tutorial -->
 @endsection
 
 @section('script')
